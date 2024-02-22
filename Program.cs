@@ -1,166 +1,78 @@
 ﻿﻿using HTTPUtils;
-using System.Text.Json;
 using AnsiTools;
 using Colors = AnsiTools.ANSICodes.Colors;
-using Deserialize;
+using Tasksolver;
 
-/*class Program
+const bool RUN_TESTS = false;
+const string myPersonalID = "b3b323af01cc8000db9688fac0005010ad30b396cea4c7de66d8efdc49e5b2c6"; 
+const string baseURL = "https://mm-203-module-2-server.onrender.com/";
+const string startEndpoint = "start/";
+const string taskEndpoint = "task/"; 
+const int NUMBER_OF_TASKS = 4;
+int taskNumber = 1;
+string answer;
+
+if(RUN_TESTS)
 {
-    const string TEST_ARG = "-t";
-    const string STRINGSORTER = "StringSorter";
-    static string testType = "";
-    static bool detailsToConsole = false;
-    static void Main(string[] args)
+    Test.Tests.RunTests();
+}
+else
+{
+    Console.Clear();
+    Console.WriteLine("Starting Assignment 2");
+
+    HttpUtils httpUtils = HttpUtils.instance;
+    Response taskResponse = await httpUtils.Get(baseURL + startEndpoint + myPersonalID);
+    Console.WriteLine("Task 1 Recieved");
+    while(!(taskNumber > NUMBER_OF_TASKS))
     {
-        if(args.Length >= 1)
+        if(taskResponse.statusCode == 200)
         {
-            if(args[0] == TEST_ARG)
-            {
-                ProcessArgs(args);
-                Tests.RunTests(testType, detailsToConsole);
-            }
-            else
-            {
-                Run();
-            }
+            Console.WriteLine($"{Colors.Green}Task {taskNumber} Recieved{Colors.White}\n");
+        }
+
+        taskResponse = await GetTaskDetails(taskResponse, httpUtils);
+        if(taskResponse.statusCode == 200)
+        {
+            Console.WriteLine("Task Details Recieved:");
+            Console.WriteLine(ANSICodes.Effects.Bold + taskResponse.task.title + ANSICodes.Reset);
+            Console.WriteLine(Colors.Yellow + taskResponse.task.description + ANSICodes.Reset);
+            Console.WriteLine("Parameters: " + taskResponse.task.parameters);
+        }
+
+        answer = TaskSolver.RunTaskSolver(taskNumber, taskResponse.task.parameters);
+        Console.WriteLine("Proposed answer: " + answer);
+        taskResponse = await PostAnswerAndRecieveNextTask(answer, taskResponse, httpUtils);
+        if(taskResponse.statusCode == 200)
+        {
+            Console.WriteLine(Colors.Green + "Answer was accepted" + ANSICodes.Reset);
         }
         else
         {
-            Run();
+            break;
         }
+        taskNumber++;
     }
 
-    static void ProcessArgs(string[] args)
+    Console.Clear();
+    if(taskNumber > NUMBER_OF_TASKS)
     {
-        if(args.Length == 3)
-        {
-            if(args[2] == "true")
-            {
-                detailsToConsole = true;
-            }
-            else
-            {
-                detailsToConsole = false;
-            }
-        }
-
-        if(args.Length > 1)
-        {
-            if(args[1] == STRINGSORTER)
-            {
-                testType = STRINGSORTER;
-            }
-        }
+        Console.WriteLine(Colors.Green + "All tasks complete!" + ANSICodes.Reset);
     }
-*/
-    //static async void Run()
-    //{
-        Console.Clear();
-        Console.WriteLine("Starting Assignment 2");
+    else
+    {
+        Console.WriteLine($"{Colors.Yellow}{taskNumber} task(s) were completed.{ANSICodes.Reset}");
+    }
+}
 
-        // SETUP 
-        const string myPersonalID = "b3b323af01cc8000db9688fac0005010ad30b396cea4c7de66d8efdc49e5b2c6"; 
-        const string baseURL = "https://mm-203-module-2-server.onrender.com/";
-        const string startEndpoint = "start/"; // baseURl + startEndpoint + myPersonalID
-        const string taskEndpoint = "task/";   // baseURl + taskEndpoint + myPersonalID + "/" + taskID
+static async Task<Response> GetTaskDetails(Response taskResponse, HttpUtils httpUtils)
+{
+    taskResponse = await httpUtils.Get(baseURL + taskEndpoint + myPersonalID + "/" + taskResponse.task.taskID);
+    return taskResponse;
+}
 
-        // Creating a variable for the HttpUtils so that we dont have to type HttpUtils.instance every time we want to use it
-        HttpUtils httpUtils = HttpUtils.instance;
-        HttpClient client = new();
-
-        //#### REGISTRATION
-        // We start by registering and getting the first task
-        Response startRespons = await httpUtils.Get(baseURL + startEndpoint + myPersonalID);
-        Console.WriteLine($"Start:\n{Colors.Magenta}{startRespons}{ANSICodes.Reset}\n\n"); // Print the response from the server to the console
-        string task1ID = "otYK2"; // We get the taskID from the previous response and use it to get the task (look at the console output to find the taskID)
-
-        //#### FIRST TASK 
-        // Fetch the details of the task from the server.
-        TaskInfo task1Info = await GetTaskDetails(client, task1ID);
-        
-       
-        //#### FIRST TASK ANSWER
-        string answer1 = StringSorter.StringSorter.SortString(task1Info.parameters);
-        Response task1AnswerResponse = await SendAnswer(httpUtils, task1ID, answer1);
-        Console.WriteLine(task1AnswerResponse);
-        string task2ID = "psu31_4";
-        
-        
-        //#### SECOND TASK
-        TaskInfo task2Info = await GetTaskDetails(client, task2ID);
-
-        //#### SECOND TASK ANSWER
-        string answer2 = Sum(task2Info.parameters);
-        Response task2AnswerResponse = await SendAnswer(httpUtils,task2ID,answer2);
-        Console.WriteLine(task2AnswerResponse);
-        string task3ID = "aAaa23";
-
-        //#### THIRD TASK
-        TaskInfo task3Info = await GetTaskDetails(client, task3ID);
-
-        //#### THIRD TASK ANSWER
-        string answer3 = FarenheitToCelcius(task3Info.parameters);
-        Response task3AnswerResponse = await SendAnswer(httpUtils,task3ID,answer3);
-        Console.WriteLine(task3AnswerResponse);
-        string task4ID = "aLp96";
-
-        //#### FOURTH TASK
-        TaskInfo task4Info = await GetTaskDetails(client, task4ID);
-
-        //#### FOURTH TASK ANSWER
-        string answer4 = OddOrEven(task4Info.parameters);
-        Response task4AnswerResponse = await SendAnswer(httpUtils, task4ID, answer4);
-        Console.WriteLine(task4AnswerResponse);
-
-
-        static async Task<Response> SendAnswer(HttpUtils http, string taskID, string answer)
-        {
-            Response taskAnswerResponse = await http.Post(baseURL + taskEndpoint + myPersonalID + "/" + taskID, answer);
-            return taskAnswerResponse;
-        }
-
-
-        static async Task<TaskInfo> GetTaskDetails(HttpClient client, string taskID)
-        {
-            await using Stream stream =
-                await client.GetStreamAsync(baseURL + taskEndpoint + myPersonalID + "/" + taskID);
-
-            TaskInfo taskInfo = await JsonSerializer.DeserializeAsync<TaskInfo>(stream);
-            stream.Close();
-            Console.WriteLine($"TASK: {taskInfo.title}\n{taskInfo.description}\nParameters: {taskInfo.parameters}");
-            return taskInfo;
-        }
-
-        static string Sum(string numberString)
-        {
-            string[] numbersToSum = numberString.Split(',');
-            int sum = 0;
-            foreach(string number in numbersToSum)
-            {
-                int n = int.Parse(number);
-                sum+= n;
-            }
-            string output = sum.ToString();
-            return output;
-        }
-        static string FarenheitToCelcius(string temperatureFH)
-        {
-            double inputTemp = double.Parse(temperatureFH);
-            double outputTemp = (((inputTemp-32)*5)/9);
-            string output = outputTemp.ToString("#.##");
-            return output;
-        }
-        static string OddOrEven(string number)
-        {
-            int n = int.Parse(number);
-            if(n % 2 == 1)
-            {
-                return "odd";
-            }
-            else
-            {
-                return "even";
-            }
-        }
- //   }
-//}
+static async Task<Response> PostAnswerAndRecieveNextTask(string answer, Response taskResponse, HttpUtils httpUtils)
+{
+    Response newTaskResponse = await httpUtils.Post(baseURL + taskEndpoint + myPersonalID + "/" + taskResponse.task.taskID, answer);
+    return newTaskResponse;
+}

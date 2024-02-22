@@ -2,20 +2,34 @@
 #pragma warning disable CS8625
 
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 
 namespace HTTPUtils
 {
+    class TaskDetails
+    {
+        public string taskID {get; set;}
+        public string title {get; set;}
+        public string description {get; set;}
+        public string parameters {get; set;}
+    }
     class Response
     {
-        public string? content { get; set; }
+        public Response(string response)
+        {
+            task = JsonSerializer.Deserialize<TaskDetails>(response);
+        }
+        public TaskDetails task {get; set;}
         public int statusCode { get; set; }
         public string url { get; set; }
 
         public override string ToString()
         {
-            return $"Response ({statusCode})\n{url} \n{content}";
+            return $"Response ({statusCode})\n{url} \n{task}";
         }
+
     }
 
     class HttpUtils
@@ -47,10 +61,10 @@ namespace HTTPUtils
         public async Task<Response> Get(string url)
         {
             int statusCode = 0;
-            String? respons = null;
+            String? response = null;
             try
             {
-                respons = await httpClient.GetStringAsync(url);
+                response = await httpClient.GetStringAsync(url);
                 statusCode = 200;
             }
             catch (HttpRequestException e)
@@ -60,7 +74,7 @@ namespace HTTPUtils
                 Console.Error.WriteLine(e.Message);
             }
 
-            return new Response() { content = respons, statusCode = statusCode, url = url };
+            return new Response(response) { statusCode = statusCode, url = url };
 
         }
 
@@ -82,7 +96,7 @@ namespace HTTPUtils
                 Console.Error.WriteLine(e.Message);
             }
 
-            return new Response() { content = respons, statusCode = statusCode, url = url };
+            return new Response(respons) { statusCode = statusCode, url = url };
         }
 
 
