@@ -1,41 +1,114 @@
 public static class StringSorter
 {
     const string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    public static string GetSortedString(string stringToSort)
+
+    public static string SortString(string stringToSort)
     {
-        string output = "";
         string[] words = stringToSort.Split(',');
-        output = SortWords(words);
+        int longestWordLength = GetLengthOfLongestWord(words);
+
+        words = FillShortWords(words, longestWordLength);
+        words = SortWords(words, longestWordLength);
+        words = RemoveFillerFromWords(words);
+
+        string output = FormatString(words);
         return output;
     }
-
-    public static string SortWords(string[] words)
+    static void Debug(string[] words)
     {
-        string output = "";
-        int wordCount = 0;
+        foreach(string word in words)
+        {
+            Console.WriteLine(word);
+        }
+        Console.ReadKey();
+    }
+    public static int GetLengthOfLongestWord(string[] words)
+    {
+        int longestWordLength = 0;
+        foreach(string word in words)
+        {
+            if(word.Length > longestWordLength)
+            {
+                longestWordLength = word.Length;
+            }
+        }
+        return longestWordLength;
+    }
+    
+    public static string[] FillShortWords(string[] words, int longestWordLength)
+    {
+        string[] filledWords = new string[words.Length];
+        for(int w = 0; w < words.Length; w++)
+        {
+            while(words[w].Length < longestWordLength)
+            {
+                words[w] += ",";
+            }
+            filledWords[w] = words[w];
+        }
+        return filledWords;
+    }
+
+    public static string[] SortWords(string[] words, int longestWordLength)
+    {
+        string[] sortedWords = words;
+        
+        for(int letterIndex = longestWordLength-1; letterIndex >= 0; letterIndex--)
+        {
+            sortedWords = SortBySelectLetter(sortedWords, letterIndex);
+        }
+        return sortedWords;
+    }
+
+    public static string[] SortBySelectLetter(string[] words, int letterIndex)
+    {
+        string[] sortedWords = new string[words.Length];
+        int sortedCount = 0;
+        for(int w = 0; w < words.Length; w++)
+        {
+            if(words[w][letterIndex] == ',')
+            {
+                sortedWords[sortedCount] = words[w];
+                sortedCount++;
+            }    
+        }
+        
         foreach(char letter in ALPHABET)
         {
-            foreach(string word in words)
+            for(int w = 0; w < words.Length; w++)
             {
-                if(word.ToUpper()[0] == letter)
-                {
-                    output = output + word + ",";
-                    wordCount++;
-                }
+                    if(words[w].ToUpper()[letterIndex] == letter)
+                    {
+                        sortedWords[sortedCount] = words[w];
+                        sortedCount++;
+                    }
             }
-            if(wordCount == words.Length)
+            if(sortedCount == words.Length)
             {
                 break;
             }
         }
-        output = output.Substring(0, output.Length-1);
-        Console.WriteLine(output);
+        return sortedWords;
+    }
+
+    public static string[] RemoveFillerFromWords(string[] words)
+    {
+        string[] wordsWithoutFiller = new string[words.Length];
+        for (int w = 0; w < words.Length; w++)
+        {
+            wordsWithoutFiller[w] = words[w].Replace(",", "");
+        }
+        return wordsWithoutFiller;
+    }
+
+    public static string FormatString(string[] words)
+    {
+        string output = "";
+        for(int w = 0; w < words.Length; w++)
+        {
+            output = output + words[w] + ",";
+        }
+        output = output.Substring(0,output.Length-1);
         return output;
     }
-
-    static void TestAlphOrder()
-    {
-        
-    }
 }
-
