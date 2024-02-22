@@ -19,33 +19,33 @@ if(RUN_TESTS)
 else
 {
     Console.Clear();
-    Console.WriteLine("Starting Assignment 2");
+    Console.WriteLine(ProgramStrings.Start);
 
     HttpUtils httpUtils = HttpUtils.instance;
     Response taskResponse = await httpUtils.Get(baseURL + startEndpoint + myPersonalID);
-    Console.WriteLine("Task 1 Recieved");
+
     while(!(taskNumber > NUMBER_OF_TASKS))
     {
         if(taskResponse.statusCode == 200)
         {
-            Console.WriteLine($"{Colors.Green}Task {taskNumber} Recieved{Colors.White}\n");
+            Console.WriteLine(ProgramStrings.TaskRecieved, taskNumber);
         }
 
         taskResponse = await GetTaskDetails(taskResponse, httpUtils);
         if(taskResponse.statusCode == 200)
         {
-            Console.WriteLine("Task Details Recieved:");
+            Console.WriteLine(ProgramStrings.DetailsRecieved);
             Console.WriteLine(ANSICodes.Effects.Bold + taskResponse.task.title + ANSICodes.Reset);
             Console.WriteLine(Colors.Yellow + taskResponse.task.description + ANSICodes.Reset);
-            Console.WriteLine("Parameters: " + taskResponse.task.parameters);
+            Console.WriteLine(ProgramStrings.Parameters, taskResponse.task.parameters);
         }
 
         answer = TaskSolver.RunTaskSolver(taskNumber, taskResponse.task.parameters);
-        Console.WriteLine("Proposed answer: " + answer);
+        Console.WriteLine(ProgramStrings.ProposedAnswer, answer);
         taskResponse = await PostAnswerAndRecieveNextTask(answer, taskResponse, httpUtils);
-        if(taskResponse.statusCode == 200)
+        if(taskResponse.task != null)
         {
-            Console.WriteLine(Colors.Green + "Answer was accepted" + ANSICodes.Reset);
+            Console.WriteLine(ProgramStrings.AnswerAccepted);
         }
         else
         {
@@ -75,4 +75,15 @@ static async Task<Response> PostAnswerAndRecieveNextTask(string answer, Response
 {
     Response newTaskResponse = await httpUtils.Post(baseURL + taskEndpoint + myPersonalID + "/" + taskResponse.task.taskID, answer);
     return newTaskResponse;
+}
+static class ProgramStrings
+{
+    public static string Start = "Starting Assignment 2\n";
+    public static string TaskRecieved = Colors.Green+"Task {0} recieved"+ANSICodes.Reset +"\n";
+    public static string DetailsRecieved = "Task Details Recieved:";
+    public static string Parameters = "Parameters: {0}";
+    public static string ProposedAnswer = "Proposed Answer: {0}";
+    public static string AnswerAccepted = Colors.Green+"Answer was accepted!"+ANSICodes.Reset;
+    public static string AllTasksComplete = Colors.Green+"All tasks complete!"+ANSICodes.Reset;
+    public static string SomeTasksComplete = Colors.Yellow+"{0} task(s) were completed."+ANSICodes.Reset;
 }
