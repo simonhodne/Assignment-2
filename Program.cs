@@ -2,8 +2,9 @@
 using System.Text.Json;
 using AnsiTools;
 using Colors = AnsiTools.ANSICodes.Colors;
+using Deserialize;
 
-class Program
+/*class Program
 {
     const string TEST_ARG = "-t";
     const string STRINGSORTER = "StringSorter";
@@ -11,7 +12,7 @@ class Program
     static bool detailsToConsole = false;
     static void Main(string[] args)
     {
-        if(args != null)
+        if(args.Length >= 1)
         {
             if(args[0] == TEST_ARG)
             {
@@ -51,9 +52,9 @@ class Program
             }
         }
     }
-
-    static async void Run()
-    {
+*/
+    //static async void Run()
+    //{
         Console.Clear();
         Console.WriteLine("Starting Assignment 2");
 
@@ -74,7 +75,22 @@ class Program
 
         //#### FIRST TASK 
         // Fetch the details of the task from the server.
-        Response task1Response = await httpUtils.Get(baseURL + taskEndpoint + myPersonalID + "/" + taskID); // Get the task from the server
-        Console.WriteLine(task1Response);
-    }
-}
+        HttpClient client = new();
+        await using Stream stream =
+            await client.GetStreamAsync(baseURL + taskEndpoint + myPersonalID + "/" + taskID);
+
+        TaskInfo taskInfo = await JsonSerializer.DeserializeAsync<TaskInfo>(stream);
+        stream.Close();
+        Console.WriteLine($"TASK: {taskInfo.title}\n{taskInfo.description}\nParameters: {taskInfo.parameters}");
+        
+        //#### FIRST TASK ANSWER
+        string answer1 = StringSorter.StringSorter.SortString(taskInfo.parameters);
+
+        Response task1AnswerResponse = await httpUtils.Post(baseURL + taskEndpoint + myPersonalID + "/" + taskID, answer1);
+        Console.WriteLine(task1AnswerResponse);
+        
+        
+        //#### SECOND STASK
+
+ //   }
+//}
