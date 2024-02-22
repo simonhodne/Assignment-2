@@ -7,7 +7,8 @@ namespace StringSorter
         public static string SortString(string stringToSort)
         {
             string[] splitWords = stringToSort.Split(',');
-            string[] words = RemoveDuplicates(splitWords);
+            string noDupeWords = RemoveDuplicates(splitWords);
+            string[] words = noDupeWords.Split(',');
             int longestWordLength = GetLengthOfLongestWord(words);
 
             words = FillShortWords(words, longestWordLength);
@@ -18,38 +19,18 @@ namespace StringSorter
             return output;
         }
 
-        static string[] RemoveDuplicates(string[] words)
+        static string RemoveDuplicates(string[] words)
         {
-            int dupesFound = 0;
-            for(int w = 0; w < words.Length; w++)
+            string noDupesString = "";
+            foreach(string word in words)
             {
-                
-                for(int i = 0; i < words.Length; i++)
+                if(!noDupesString.Contains(word))
                 {
-                    if(w != i)
-                    {
-                        if(words[w] == words[i])
-                        {
-                            dupesFound++;
-                        }
-                    }
+                    noDupesString = noDupesString + word + ",";
                 }
             }
-            dupesFound /= 2;
-            
-            string[] noDupeWords = new string[words.Length-dupesFound];
-            int wordCounter = 0;
-            for(int w = 0; w < words.Length; w++)
-            {
-                if(!noDupeWords.Contains(words[w]))
-                {
-                    noDupeWords[wordCounter] = words[w];
-                    wordCounter++;
-                }
-
-
-            }
-            return noDupeWords;
+            noDupesString = noDupesString.Substring(0, noDupesString.Length-1);
+            return noDupesString;
         }
 
         static int GetLengthOfLongestWord(string[] words)
