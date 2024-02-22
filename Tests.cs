@@ -16,7 +16,7 @@ namespace Test
         static string sortStringTestOutput1 = "A,b,C,f,K,o";
         static string sortStringTestInput2 = "AC,PO,Ab,KI,Aa,JL,ad";
         static string sortStringTestOutput2 = "Aa,Ab,AC,ad,JL,KI,PO";
-        static string sortStringTestInput3 = "tullball,tull,tullete,DOMIHODE,tulleBukk,Computer,tulle,you,just,activated,my,trap,card";
+        static string sortStringTestInput3 = "tullball,tull,tullete,DOMIHODE,tulleBukk,Computer,tulle,you,just,activated,my,trap,card,tull";
         static string sortStringTestOutput3 = "activated,card,Computer,DOMIHODE,just,my,trap,tull,tullball,tulle,tulleBukk,tullete,you";
         static string sumTestInput = "1,9,2,8,3,7,4,6,5,5";
         static string sumTestOutput = "50";

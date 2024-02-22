@@ -45,6 +45,10 @@ namespace Tasksolver
             double inputTemp = double.Parse(temperatureFH);
             double outputTemp = (((inputTemp-32)*5)/9);
             string output = outputTemp.ToString("#.##");
+            if(!output.Contains('.'))
+            {
+                output += ".00";
+            }
             return output;
         }
 
