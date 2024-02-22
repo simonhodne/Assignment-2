@@ -6,15 +6,49 @@ using Colors = AnsiTools.ANSICodes.Colors;
 class Program
 {
     const string TEST_ARG = "-t";
+    const string STRINGSORTER = "StringSorter";
+    static string testType = "";
+    static bool detailsToConsole = false;
     static void Main(string[] args)
     {
-        if(args[0] == TEST_ARG)
+        if(args != null)
         {
-            Tests.RunTests();
+            if(args[0] == TEST_ARG)
+            {
+                ProcessArgs(args);
+                Tests.RunTests(testType, detailsToConsole);
+            }
+            else
+            {
+                Run();
+            }
         }
         else
         {
             Run();
+        }
+    }
+
+    static void ProcessArgs(string[] args)
+    {
+        if(args.Length == 3)
+        {
+            if(args[2] == "true")
+            {
+                detailsToConsole = true;
+            }
+            else
+            {
+                detailsToConsole = false;
+            }
+        }
+
+        if(args.Length > 1)
+        {
+            if(args[1] == STRINGSORTER)
+            {
+                testType = STRINGSORTER;
+            }
         }
     }
 
