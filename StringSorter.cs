@@ -24,7 +24,7 @@ namespace StringSorter
             string noDupesString = "";
             foreach(string word in words)
             {
-                if(!noDupesString.Contains(word))
+                if(!noDupesString.Split().Contains(word))
                 {
                     noDupesString = noDupesString + word + ",";
                 }
