@@ -47,10 +47,7 @@ namespace StringSorter
                     wordCounter++;
                 }
 
-                if(wordCounter == noDupeWords.Length)
-                {
-                    break;
-                }
+
             }
             return noDupeWords;
         }
