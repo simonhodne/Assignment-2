@@ -6,10 +6,20 @@ namespace Test
     class Tests
     {
         const string STRINGSORTER = "StringSorter";
-        static public void RunTests()
+        const string TASKSOLVER = "TaskSolver";
+        const string ALL = "All";
+        static public void RunTests(string testType, bool detailsToConsole)
         {
-            RunStringSorterTests(false);
-            RunTaskSolverTests(true);
+            if(testType == STRINGSORTER || testType == ALL)
+            {
+                RunStringSorterTests(detailsToConsole);
+            }
+            
+            if(testType == TASKSOLVER || testType == ALL)
+            {
+                RunTaskSolverTests(detailsToConsole);
+            }
+            
         }
 
         static string sortStringTestInput1 = "K,C,b,f,o,A";
